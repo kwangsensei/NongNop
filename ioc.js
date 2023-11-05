@@ -2,7 +2,8 @@
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = "mongodb+srv://adminIOC:admin@cluster0.sinzaa9.mongodb.net/?retryWrites=true&w=majority";
 
-const PORT = 3000;
+
+const PORT = process.env.PORT;
 
 const express = require('express');
 const ioc = express ();
