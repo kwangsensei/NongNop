@@ -3,7 +3,8 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = "mongodb+srv://adminIOC:admin@cluster0.sinzaa9.mongodb.net/?retryWrites=true&w=majority";
 
 
-const PORT = 3000;
+const config = require('./config');
+console.log(config);
 
 const express = require('express');
 const ioc = express ();
@@ -31,8 +32,8 @@ async function getQuery(msg, request, response) {
 }
 
 function clientConnect() {
-  ioc.listen(PORT, () => {
-    console.log("Server Listening on PORT:", PORT);
+  ioc.listen(config, () => {
+    console.log("Server Listening on PORT:", config);
   });
   ioc.get('/status', (request, response) => {
     const status = {
