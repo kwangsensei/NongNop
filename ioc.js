@@ -30,10 +30,24 @@ async function connectDB(){
 async function getQuery(msg, request, response) {
   const db = client.db('ioc');
   const collection = db.collection(msg);
-  query = await collection.find(request.params).toArray();
+  var query_round = request.params.round;
+  var query;
+  console.log("param is: ", query_round);
+  if(query_round == "Final"){
+    query = await collection.find({$or: [{round: "Final"}, 
+    {round: "Gold Medal Match"}]}).toArray();
+  }
+  else if(query_round == "Medal"){
+    query = await collection.find({$or: [{round: "Final"}, 
+    {round: "Gold Medal Match"},
+    {round: "Bronze Medal Match"}]}).toArray();
+  }
+  else{
+    query = await collection.find(request.params).toArray();
+  }
   console.log(query);
   response.send(query);
-} 
+}
 
 async function updateQuery(msg, request, response) {
   const db = client.db('ioc');
@@ -91,13 +105,13 @@ async function clientConnect() {
     getQuery("match_table", request, response);
     console.log("send match_table");
 });
-  ioc.get('/match_table/:round', (request, response) => {
+  ioc.get('/match_table/round/:round', (request, response) => {
     console.log(request.headers);
     getQuery("match_table", request, response);
-    console.log("send final match_table");
+    console.log("send match_table in specific round");
   });
   
-  ioc.post('/match_table/:sport_id', (request, response) => {
+  ioc.post('/match_table/id/:sport_id', (request, response) => {
     console.log(request.headers);
     console.log(request.body);
     updateQuery("match_table", request, response);
