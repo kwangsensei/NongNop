@@ -9,67 +9,74 @@ const express = require('express');
 const ioc = express ();
 ioc.use(express.json());
 
+const cors = require('cors');
+const corsOptions = {
+  "origin": "*",
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "optionsSuccessStatus": 204
+}
+ioc.use(cors(corsOptions));
+
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri);
 
+async function connectDB(){
+  await client.connect();
+  await client.db("admin").command({ ping: 1 });
+  console.log("Pinged your deployment. You successfully connected to MongoDB!");
+}
+
 async function getQuery(msg, request, response) {
-  try {
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    const db = client.db('ioc');
-    const collection = db.collection(msg);
-    query = await collection.find(request.params).toArray();
-    console.log(query);
-    response.send(query);
-  } 
-  finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
+  const db = client.db('ioc');
+  const collection = db.collection(msg);
+  query = await collection.find(request.params).toArray();
+  console.log(query);
+  response.send(query);
 }
 
 async function updateQuery(msg, request) {
-  try {
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    const db = client.db('ioc');
-    const collection = db.collection(msg);
-    query = await collection.updateOne(request.params, {$set: request.body});
-  } 
-  finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
+  const db = client.db('ioc');
+  const collection = db.collection(msg);
+  query = await collection.updateOne(request.params, {$set: request.body}, {upsert: true});
 }
 
-function clientConnect() {
-  ioc.listen(config, () => {
+async function clientConnect() {
+  await ioc.listen(config, () => {
     console.log("Server Listening on PORT:", config);
   });
-  ioc.get('/status', (request, response) => {
+  await ioc.get('/status', (request, response) => {
     const status = {
         'Status': 'Running'
     };    
     response.send(status);
     console.log("send status");
   });
-  ioc.get('/match_table/', (request, response) => {
+  await ioc.get('/match_table/', (request, response) => {
     getQuery("match_table", request, response);
     console.log("send match_table");
 });
-  ioc.get('/match_table/:round', (request, response) => {
+  await ioc.get('/match_table/:round', (request, response) => {
     getQuery("match_table", request, response);
     console.log("send final match_table");
   });
-  ioc.post('/match_table/:sport_id', (request, response) => {
+  await ioc.post('/match_table/:sport_id', (request, response) => {
     console.log(request.body);
     updateQuery("match_table", request);
-    response.send("complete");
+    response.send("update match result complete.");
+  });
+  await ioc.post('/user_statistic/', (request, response) => {
+    try{
+      console.log(request.body);
+      updateQuery("user_statistic", request);
+      response.send("update audience statistic complete.");
+    }
+    catch(error){
+      console.log(error);
+      console.log("failed to insert ", request.body);
+    }
   });
 }
 
+connectDB()
 clientConnect();
