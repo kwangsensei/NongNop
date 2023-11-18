@@ -45,35 +45,33 @@ async function clientConnect() {
   await ioc.listen(config, () => {
     console.log("Server Listening on PORT:", config);
   });
-  await ioc.get('/status', (request, response) => {
-    const status = {
-        'Status': 'Running'
-    };    
-    response.send(status);
-    console.log("send status");
-  });
-  await ioc.get('/match_table/', (request, response) => {
+  ioc.get('/match_table/', (request, response) => {
+    console.log(request.headers);
     getQuery("match_table", request, response);
     console.log("send match_table");
 });
-  await ioc.get('/match_table/:round', (request, response) => {
+  ioc.get('/match_table/:round', (request, response) => {
+    console.log(request.headers);
     getQuery("match_table", request, response);
     console.log("send final match_table");
   });
-  await ioc.post('/match_table/:sport_id', (request, response) => {
+  
+  ioc.post('/match_table/:sport_id', (request, response) => {
+    console.log(request.headers);
     console.log(request.body);
     updateQuery("match_table", request);
     response.send("update match result complete.");
   });
-  await ioc.post('/user_statistic/', (request, response) => {
+  ioc.post('/user_statistic/', (request, response) => {
     try{
+      console.log(request.headers);
       console.log(request.body);
       updateQuery("user_statistic", request);
       response.send("update audience statistic complete.");
     }
     catch(error){
       console.log(error);
-      console.log("failed to insert ", request.body);
+      console.log("failed to insert \n", error);
     }
   });
 }
