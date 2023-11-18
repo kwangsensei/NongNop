@@ -33,12 +33,29 @@ async function getQuery(msg, request, response) {
   query = await collection.find(request.params).toArray();
   console.log(query);
   response.send(query);
-}
+} 
 
-async function updateQuery(msg, request) {
+async function updateQuery(msg, request, response) {
   const db = client.db('ioc');
   const collection = db.collection(msg);
-  query = await collection.updateOne(request.params, {$set: request.body});
+  var format = resultFormat(request.body);
+  if(format == true){
+    await collection.updateOne(request.params, {$set: request.body});
+    response.send("update match result complete.");
+  }
+  else{
+    response.send("Wrong result format");
+  }
+}
+
+function resultFormat(body){
+  if(Object.keys(body).length != 1){
+    return false;
+  }
+  if(body.result == null){
+    return false;
+  }
+  return true;
 }
 
 async function insertUserStatistic(msg, request, response) {
@@ -83,8 +100,7 @@ async function clientConnect() {
   ioc.post('/match_table/:sport_id', (request, response) => {
     console.log(request.headers);
     console.log(request.body);
-    updateQuery("match_table", request);
-    response.send("update match result complete.");
+    updateQuery("match_table", request, response);
   });
   ioc.post('/user_statistic/', (request, response) => {
     try{
