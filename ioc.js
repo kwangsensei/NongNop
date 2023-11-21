@@ -23,24 +23,63 @@ const client = new MongoClient(uri);
 
 async function connectDB(){
   await client.connect();
-  await client.db("admin").command({ ping: 1 });
+  await client.db("ioc").command({ ping: 1 });
   console.log("Pinged your deployment. You successfully connected to MongoDB!");
 }
 
+async function resetDashboard(){
+  const collection = db.collection('dashboard');
+  await collection.updateMany({country:{$exists: true}}, {$set: {gold: 0, silver: 0, bronze: 0}})
+  console.log("reset db");
+}
+
+async function upDateDashboard(sportOBJ, isInc){
+  const collection = db.collection('new_match_table');
+  var match_query;
+  if(sportOBJ == null){
+    match_query = await collection.find({result: {$exists: true}}).project({result: 1, _id: 0}).toArray();
+  }
+  else{
+    match_query = await collection.find(sportOBJ).project({result: 1, _id: 0}).toArray();
+  }
+  var dashboard_query = db.collection('dashboard');
+  
+  for(let i = 0; i < match_query.length; i++){
+    var result = match_query[i];
+    var count = 1;
+    if(!isInc){
+      count = -1
+    }
+    for(j = 0; j < result.result.gold.length; j++){
+      await dashboard_query.updateOne({country: result.result.gold[j]}, {$inc: {gold: count}});
+    }
+    for(j = 0; j < result.result.silver.length; j++){
+      await dashboard_query.updateOne({country: result.result.silver[j]}, {$inc: {silver: count}});
+    }
+    for(j = 0; j < result.result.bronze.length; j++){
+      await dashboard_query.updateOne({country: result.result.bronze[j]}, {$inc: {bronze: count}});
+    }
+  }
+  console.log("dashboard is up to date")
+}
+
 async function getAllCollection(msg, response) {
-  const db = client.db('ioc');
   const collection = db.collection(msg);
   var query = await collection.find().project({_id: 0}).toArray();
-  console.log(query);
   response.send(query);
 }
 
 async function updateQuery(msg, request, response) {
-  const db = client.db('ioc');
   const collection = db.collection(msg);
   var format = resultFormat(request.body);
-  if(format == true){
+  var sport = await collection.findOne(request.params);
+  if (sport == null){
+    response.send("wrong sport id.");
+  }
+  else if(format == true){
+    upDateDashboard(request.params, false);
     await collection.updateOne(request.params, {$set: request.body});
+    upDateDashboard(request.params, true);
     response.send("update match result complete.");
   }
   else{
@@ -59,11 +98,10 @@ function resultFormat(body){
 }
 
 async function insertUserStatistic(msg, request, response) {
-  const db = client.db('ioc');
   const collection = db.collection(msg);
   var format = userStatisticFormat(request.body);
   if(format == true){
-    var query = await collection.updateOne({country: request.body.country}, {$set: {count: parseInt(request.body.count)}}, {upsert: true});
+    await collection.updateOne({country: request.body.country}, {$set: {count: parseInt(request.body.count)}}, {upsert: true});
     response.send("update audience statistic complete.");
   }
   else{
@@ -113,5 +151,8 @@ async function clientConnect() {
   });
 }
 
-connectDB()
+connectDB();
+const db = client.db('ioc');
+resetDashboard();
+upDateDashboard(null, true);
 clientConnect();
