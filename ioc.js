@@ -7,7 +7,10 @@ console.log(config);
 
 const express = require('express');
 const ioc = express ();
+const ejs = require('ejs');
+
 ioc.use(express.json());
+ioc.set('view engine', 'ejs');
 
 const cors = require('cors');
 const corsOptions = {
@@ -25,6 +28,15 @@ async function connectDB(){
   await client.connect();
   await client.db("ioc").command({ ping: 1 });
   console.log("Pinged your deployment. You successfully connected to MongoDB!");
+}
+
+async function medalDashboard(){
+  const collection = db.collection('dashboard');
+  var dashboard_query =  await collection.find({}).project({_id:0}).toArray();
+  ioc.get('/dashboard/', (request, response) => {
+    response.render('index', { dashboard_query });
+  });
+  console.log("create medal dashboard");
 }
 
 async function resetDashboard(){
@@ -127,6 +139,7 @@ async function clientConnect() {
   await ioc.listen(config, () => {
     console.log("Server Listening on PORT:", config);
   });
+  medalDashboard();
   ioc.get('/match_table/', (request, response) => {
     console.log(request.headers);
     getAllCollection("new_match_table", response);
