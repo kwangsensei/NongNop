@@ -13,6 +13,7 @@ ioc.use(express.json());
 ioc.set('view engine', 'ejs');
 
 const cors = require('cors');
+const { request } = require('http');
 const corsOptions = {
   "origin": "*",
   "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -30,19 +31,23 @@ async function connectDB(){
   console.log("Pinged your deployment. You successfully connected to MongoDB!");
 }
 
-async function medalDashboard(){
+async function medalDashboard(response){
   const collection = db.collection('dashboard');
-  var dashboard_query =  await collection.find({}).project({_id:0}).toArray();
-  ioc.get('/dashboard/', (request, response) => {
-    response.render('index', { dashboard_query });
-  });
+  var dashboard_query =  await collection.find({}).project({_id: 0}).toArray();
+  response.render('index', { dashboard_query });
   console.log("create medal dashboard");
+}
+
+async function audienceDashboard(response){
+  const collection = db.collection('user_statistic');
+  const userQuery = await collection.find({}).project({_id: 0}).toArray();
+  response.render('audience', {userQuery});
 }
 
 async function resetDashboard(){
   const collection = db.collection('dashboard');
   await collection.updateMany({country:{$exists: true}}, {$set: {gold: 0, silver: 0, bronze: 0}})
-  console.log("reset db");
+  console.log("reset dashboard");
 }
 
 async function upDateDashboard(sportOBJ, isInc){
@@ -73,6 +78,20 @@ async function upDateDashboard(sportOBJ, isInc){
     }
   }
   console.log("dashboard is up to date")
+}
+
+async function resetAudience(){
+  const collection = db.collection('user_statistic');
+  var queryArray = await collection.find({}).toArray();
+  total = 0;
+  for(let i=0;i<queryArray.length;i++){
+    total += queryArray[i].count;
+  }
+  for(let i=0;i<queryArray.length;i++){
+    var obj = queryArray[i];
+    await collection.updateOne(obj,{$set:{percent: Math.round(obj.count*10000/total)/100}});
+  }
+  console.log("reset user_statistic");
 }
 
 async function getAllCollection(msg, response) {
@@ -114,6 +133,7 @@ async function insertUserStatistic(msg, request, response) {
   var format = userStatisticFormat(request.body);
   if(format == true){
     await collection.updateOne({country: request.body.country}, {$set: {count: parseInt(request.body.count)}}, {upsert: true});
+    resetAudience();
     response.send("update audience statistic complete.");
   }
   else{
@@ -139,7 +159,12 @@ async function clientConnect() {
   await ioc.listen(config, () => {
     console.log("Server Listening on PORT:", config);
   });
-  medalDashboard();
+  ioc.get('/', (request, response) => {
+    medalDashboard(response);
+  });
+  ioc.get('/audience_statistic', (request, response) => {
+    audienceDashboard(response);
+  });
   ioc.get('/match_table/', (request, response) => {
     console.log(request.headers);
     getAllCollection("new_match_table", response);
@@ -164,8 +189,10 @@ async function clientConnect() {
   });
 }
 
+var total = 0;
 connectDB();
 const db = client.db('ioc');
 resetDashboard();
+resetAudience();
 upDateDashboard(null, true);
 clientConnect();

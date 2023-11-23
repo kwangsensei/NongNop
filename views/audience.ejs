@@ -50,29 +50,23 @@
     </style>
 </head>
 <body>
-    <div class="wrapper">  
-        <a href="audience_statistic"><button>audience statistic</button></a>
+    <div class="wrapper">
+        <a href="/"><button>dashboard</button></a>
         <div class="statistic">
             <div class="header">
-                <h2>Olympic Medal Table</h2>
+                <h2>Olympic Audience Table</h2>
             </div>
             <table id="medal_table">
                 <tr>
-                    <th>Rank</th>
                     <th>Country</th>
-                    <th>Gold</th>
-                    <th>Silver</th>
-                    <th>Bronze</th>
                     <th>Total</th>
+                    <th>Percent</th>
                 </tr>
-                <% for (let i = 0; i < dashboard_query.length; i++) { %>
+                <% for (let i = 0; i < userQuery.length; i++) { %>
                     <tr>
-                        <td><%= i+1 %></td>
-                        <td><%= dashboard_query[i].country %></td>
-                        <td><%= dashboard_query[i].gold %></td>
-                        <td><%= dashboard_query[i].silver %></td>
-                        <td><%= dashboard_query[i].bronze %></td>
-                        <td><%= dashboard_query[i].gold + dashboard_query[i].silver + dashboard_query[i].bronze %></td>
+                        <td><%= userQuery[i].country %></td>
+                        <td><%= userQuery[i].count %></td>
+                        <td><%= userQuery[i].percent %></td>
                     </tr>
                 <% } %>
             </table>
