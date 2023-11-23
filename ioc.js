@@ -1,6 +1,6 @@
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://adminIOC:admin@cluster0.sinzaa9.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://webDeploy:webDeployadmin@cluster0.sinzaa9.mongodb.net/?retryWrites=true&w=majority";
 
 const config = require('./config');
 console.log(config);
@@ -13,7 +13,7 @@ ioc.use(express.json());
 ioc.set('view engine', 'ejs');
 
 const cors = require('cors');
-const { request } = require('http');
+const { request, STATUS_CODES } = require('http');
 const corsOptions = {
   "origin": "*",
   "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -171,10 +171,16 @@ async function clientConnect() {
 });
   
   ioc.post('/match_table/id/:sport_id', (request, response) => {
-    console.log(request.headers);
-    console.log(request.body);
-    updateQuery("new_match_table", request, response);
-    console.log("Finish update result.");
+    clientOrigin = request.headers.origin;
+    console.log(clientOrigin);
+      if(clientOrigin == parisOrigin){
+        console.log(request.body);
+        updateQuery("new_match_table", request, response);
+        console.log("Finish update result.");
+      }
+      else{
+        response.sendStatus(403);
+      }
   });
   ioc.post('/user_statistic/', (request, response) => {
     try{
@@ -188,7 +194,10 @@ async function clientConnect() {
   });
 }
 
+
 var total = 0;
+const parisOrigin = 'https://paris-organisation-frontend.vercel.app';
+
 connectDB();
 const db = client.db('ioc');
 resetDashboard();
