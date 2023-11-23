@@ -128,7 +128,6 @@ async function clientConnect() {
     console.log("Server Listening on PORT:", config);
   });
   ioc.get('/match_table/', (request, response) => {
-    console.log(request.headers);
     getAllCollection("new_match_table", response);
     console.log("send match_table");
 });
