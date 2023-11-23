@@ -6,56 +6,101 @@
     <title>NongNop Dashboard</title>
     <link rel='stylesheet' type='text/css' media='screen' href="/style.css">
     <style>
-        .wrapper{
-            width: 80%;
+        body {
+            background-color: #f0f0f0;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+    
+        .wrapper {
+            max-width: 800px;
+            margin: 40px auto 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+    
+        .header {
+            background: linear-gradient(45deg, #0066cc, #003366);
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+    
+        h2 {
+            margin: 0;
+            font-family: 'Georgia', serif;
+        }
+    
+        .logo-container {
+            text-align: center;
+        }
+        .logo {
+            width: 140px;
+            height: auto;
+            margin: 10px;
+        }
+    
+        .button-container {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 10px;
+            right: 10px;
         }
-
-        .statistic{
+    
+        table {
             width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-
-        .header{
-            background-color: #fafafa;
-            box-shadow: 2px 2px 8px rgba(30,30,30,.2);
-            margin: 10px 15px;
-            padding: 15px 0;
+    
+        th, td {
+            padding: 12px;
             text-align: center;
-            text-transform: uppercase;
         }
-        table{
-            width: 100%;
-            padding: 15px 10px;
-            margin: 10px 0;
-            text-align: center;
-            border-spacing: 0;
+    
+        th {
+            background-color: #ffcc29;
+            color: #fff;
         }
-        tr:first-child{
-            background-color: #37474f;
-            color: #fafafa;
-            text-transform: uppercase;
+    
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
-        th{
-            padding: 15px 0;
+    
+        button {
+            background-color: #0066cc;
+            color: #fff;
+            padding: 10px 20px;
             border: none;
-            border-spacing: 0;
-            
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
         }
-
-        tr td{
-            padding: 15px 0;
+    
+        button:hover {
+            background-color: #004080;
         }
     </style>
 </head>
 <body>
-    <div class="wrapper">  
-        <a href="audience_statistic"><button>audience statistic</button></a>
-        <div class="statistic">
-            <div class="header">
-                <h2>Olympic Medal Table</h2>
-            </div>
+    <div class="wrapper">
+        <div class="logo-container">
+            <img class="logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/d/d1/2024_Summer_Olympics_logo.svg/1200px-2024_Summer_Olympics_logo.svg.png" alt="Logo">
+        </div>
+        <div class="button-container">
+            <a href="audience_statistic"><button>Audience Statistic</button></a>
+        </div>
+        <div class="header">
+            <h2>Olympic Medal Table</h2>
+        </div>
             <table id="medal_table">
                 <tr>
                     <th>Rank</th>
@@ -72,7 +117,7 @@
                         <td><%= dashboard_query[i].gold %></td>
                         <td><%= dashboard_query[i].silver %></td>
                         <td><%= dashboard_query[i].bronze %></td>
-                        <td><%= dashboard_query[i].gold + dashboard_query[i].silver + dashboard_query[i].bronze %></td>
+                        <td><%= dashboard_query[i].totalMedals %></td>
                     </tr>
                 <% } %>
             </table>

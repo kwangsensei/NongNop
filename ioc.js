@@ -34,13 +34,33 @@ async function connectDB(){
 async function medalDashboard(response){
   const collection = db.collection('dashboard');
   var dashboard_query =  await collection.find({}).project({_id: 0}).toArray();
+  dashboard_query.forEach(country => {
+    country.totalMedals = country.gold + country.silver + country.bronze;
+  });
+  dashboard_query.sort((a, b) => b.totalMedals - a.totalMedals);
+  dashboard_query.sort((a, b) => {
+    if (b.gold !== a.gold) {
+      return b.gold - a.gold;
+    } else if (b.silver !== a.silver) {
+      return b.silver - a.silver;
+    } else if (b.bronze !== a.bronze) {
+      return b.bronze - a.bronze;
+    } else {
+      return a.country.localeCompare(b.country);
+    }
+  });
   response.render('index', { dashboard_query });
-  console.log("create medal dashboard");
 }
 
 async function audienceDashboard(response){
   const collection = db.collection('user_statistic');
   const userQuery = await collection.find({}).project({_id: 0}).toArray();
+  userQuery.sort((a, b) => {
+    if (b.count !== a.count) {
+      return b.count - a.count;
+    }
+    return a.country.localeCompare(b.country);
+  });
   response.render('audience', {userQuery});
 }
 
