@@ -33,7 +33,7 @@ async function connectDB(){
 
 async function medalDashboard(response){
   const collection = db.collection('dashboard');
-  const sortMedal = {gold: -1, silver: -1, bronze: -1};
+  const sortMedal = {gold: -1, silver: -1, bronze: -1, country: 1};
   var dashboard_query =  await collection.find({}).sort(sortMedal).project({_id: 0}).toArray();
   dashboard_query.forEach(country => {
     country.totalMedals = country.gold + country.silver + country.bronze;
@@ -43,7 +43,7 @@ async function medalDashboard(response){
 
 async function audienceDashboard(response){
   const collection = db.collection('user_statistic');
-  const sortAudience = {count: -1};
+  const sortAudience = {count: -1, country: 1};
   const userQuery = await collection.find({}).sort(sortAudience).project({_id: 0}).toArray();
   response.render('audience', {userQuery});
 }
